@@ -1,0 +1,50 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['sankey'] });
+        google.charts.setOnLoadCallback(drawChart);
+
+        function drawChart() {
+
+            var json = $.ajax({
+                url: "https://api.flipsidecrypto.com/api/v2/queries/8b7ae795-9761-4c91-862e-9b58e7ca9ca5/data/latest",
+                dataType: "json",
+                success: function (jsonData) {
+                    var data = new google.visualization.DataTable();
+                    data.addColumn('string', "FROM");
+                    data.addColumn('string', "TO");
+                    data.addColumn('number', "WEIGHT");
+
+                    for (var i = 0; i < jsonData.length; i++) {
+                        from = jsonData[i].FROM_ASSET;
+                        to = jsonData[i].TO_ASSET;
+                        amount = jsonData[i].AMOUNT
+                        data.addRow([from, to, amount]);
+                    }
+
+                    // Sets chart options.
+                    var options = {
+                        width: 900,
+                        height: 700
+                    };
+                                // Instantiates and draws our chart, passing in some options.
+            var chart = new google.visualization.Sankey(document.getElementById('sankey_basic'));
+            chart.draw(data, options);
+                }
+            });
+
+
+
+        }
+    </script>
+</head>
+
+<body>
+    <div id="sankey_basic" style="width: 900px; height: 300px;"></div>
+</body>
+
+</html>
