@@ -3,7 +3,6 @@
 <head>
     <title>Thorswap Sankey</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
     <script src="https://kit.fontawesome.com/3793da8bd7.js" crossorigin="anonymous"></script>
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -15,6 +14,8 @@
             background-color: #22242a;
         }
 
+        ul,
+        li,
         p {
             color: white !important;
         }
@@ -22,6 +23,22 @@
         select {
             color: white !important;
             background-color: #22242a !important;
+        }
+
+
+        .social-text {
+            color: #28dcf7 !important;
+            font-weight: 700;
+        }
+
+        a.social-link:link,
+        :visited {
+            color: #28dcf7;
+        }
+
+        a.social-link:hover {
+            color: #28dcf7;
+            text-decoration: underline;
         }
     </style>
 
@@ -55,13 +72,12 @@
 
                     // Sets chart options.
                     var options = {
-                        width: 900,
-                        height: 700,
+                        width: 1100,
                         sankey: {
                             link: { color: '#2dafd9', colorMode: 'gradient' },
                             node: {
                                 width: 20,
-                                nodePadding: 15,
+                                nodePadding: 18,
                                 label: {
                                     color: '#FFFFFF'
                                 }
@@ -82,19 +98,39 @@
 <body>
     <div class="container is-fullhd">
 
-        <div class="block mt-2 ">
+        <div class="block mt-2 mb-3">
             <p class="title is-2">Thorswap<span style="color:#28dcf7" ;>Sankey</span></p>
-            <p class="subtitle is-4"><span style="color:#28dcf7" ;>An interactive tool to visualise aggregated ThorSwap volume.</span></p>
+            <p class="subtitle is-4"><span style="color:#28dcf7" ;>An interactive tool for visualising aggregated
+                    ThorSwap
+                    volume</span></p>
         </div>
-
         <div class="block mt-2">
-            <p class=" ml-1 mb-1 is-title-5">Choose asset being offered:</p>
-            <div class="select is-rounded is-primary">
-                <select id="from_asset" onchange="drawChart()">
+            <p class=" ml-1 mb-2 is-title-5">Choose the asset being offered:</p>
+            <div class="select is-rounded is-info">
+                <select style="width:200px;" id="from_asset" onchange="drawChart()">
                     <option>BNB.BNB</option>
-                    <option>BNB.BUSD</option>
+                    <option>BCH.BCH</option>
+                    <option>BTC.BTC</option>
                     <option>ETH.ETH</option>
+                    <option>LTC.LTC</option>
+                    <option>THOR.RUNE</option>
+                    <option>BNB.AVA</option>
                     <option>BNB.BTCB</option>
+                    <option>BNB.BUSD</option>
+                    <option>BNB.TWT</option>
+                    <option>ETH.AAVE</option>
+                    <option>ETH.ALCX</option>
+                    <option>ETH.HOT</option>
+                    <option>ETH.KYL</option>
+                    <option>ETH.PERP</option>
+                    <option>ETH.SNX</option>
+                    <option>ETH.SUSHI</option>
+                    <option>ETH.RAZE</option>
+                    <option>ETH.THOR</option>
+                    <option>ETH.USDC</option>
+                    <option>ETH.USDT</option>
+                    <option>ETH.XRUNE</option>
+                    <option>ETH.YFI</option>
                 </select>
             </div>
         </div>
@@ -103,7 +139,41 @@
             <div id="sankey_from" style="width: 100%; height: 100%;"> </div>
         </div>
 
+        <div class="block">
+            <p class="title is-4">Technical notes</p>
+            <div class="content">
+                <ul>
+                    <li>
+                        <p>Swap volume represents the total USD value of all swaps between pairs of tokens, for all data available in Flipside Crypto's Thorchain swaps table.</p>
+                    </li>
+                    <li>
+                        <p>Swaps between two tokens (excluding RUNE) involve trading the first token for RUNE, then from
+                            RUNE to the second token. The intermediate swap is not visualised for clairty.</p>
+                    </li>
+                </ul>
+                <p>A JSON enpoint for the underlying data is available: <a class="social-link"
+                        href="https://api.flipsidecrypto.com/api/v2/queries/18af3d33-c935-4148-9f4f-f30c28d3dcfb/data/latest"
+                        target="_blank">here</a>.
+                    The entire web application is publically available as <a class="social-link"
+                        href="https://github.com/anthonydouc/Thorswap-sankey" target="_blank">a public github
+                        repository</a>.</p>
+            </div>
+        </div>
+
+        <div class="block mb-1">
+            <span class="social-text">AD</span>
+            <a class="social-link" href="https://stackoverflow.com/users/7583832/anthonydouc" target="_blank">
+                <i class="fab fa-stack-overflow fa-lg social-link" aria-hidden="true"></i>
+            </a>
+            <a class="social-link" href="https://github.com/anthonydouc" target="_blank">
+                <i class="fab fa-github fa-lg social-link" aria-hidden="true"></i>
+            </a>
+            <a class="social-link" href="https://twitter.com/AD14367367" target="_blank">
+                <i class="fab fa-twitter fa-lg social-link" aria-hidden="true"></i>
+            </a>
+        </div>
     </div>
+
 </body>
 
 </html>
