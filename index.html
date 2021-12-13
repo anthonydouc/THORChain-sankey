@@ -14,9 +14,16 @@
             background-color: #22242a;
         }
 
+        .google-visualization-tooltip{
+            background-color: #22242a !important;
+            border: 0px solid #22242a !important;
+            -webkit-box-shadow: 0px 0px 0px 0px !important;
+        }
+
         ul,
         li,
-        p {
+        p,
+        strong {
             color: white !important;
         }
 
@@ -54,10 +61,13 @@
                 dataType: "json",
                 success: function (jsonData) {
                     var data = new google.visualization.DataTable();
-                    var from_asset = document.getElementById("from_asset").value
+                    var from_asset = document.getElementById("from_asset").value;
+
+
                     data.addColumn('string', "FROM");
                     data.addColumn('string', "TO");
                     data.addColumn('number', "WEIGHT");
+                    data.addColumn({type:'string', role:'tooltip'});
 
 
                     for (var i = 0; i < jsonData.length; i++) {
@@ -65,19 +75,25 @@
                         to = jsonData[i].TO_ASSET;
                         amount = jsonData[i].AMOUNT;
                         if ((from == from_asset) && (to != from_asset)) {
-                            data.addRow([from, to, amount]);
+                            tooltip = '<div style="margin: 5px;"><p style=" width:140px;"><strong>'+ from + '</strong> to <strong>' + to + '</strong></p><span style="color:#ffffff">Amount: ' + amount + '</span></div>';
+                            data.addRow([from, to, amount, tooltip]);
                         };
 
                     }
 
+                    var colors = ['#00deff', '#00deff'];
+
                     // Sets chart options.
                     var options = {
-                        width: 1100,
+                        tooltip: {isHtml: true},
                         sankey: {
-                            link: { color: '#2dafd9', colorMode: 'gradient' },
+                            link: {
+                                colorMode: 'gradient',
+                                color: { stroke:'#00deff', strokeWidth: 0.05}
+                            },
                             node: {
                                 width: 20,
-                                nodePadding: 18,
+                                nodePadding: 12,
                                 label: {
                                     color: '#FFFFFF'
                                 }
@@ -136,7 +152,7 @@
         </div>
 
         <div class="block">
-            <div id="sankey_from" style="width: 100%; height: 100%;"> </div>
+            <div id="sankey_from" style="width: 85%; height: 75%;"> </div>
         </div>
 
         <div class="block">
@@ -144,7 +160,8 @@
             <div class="content">
                 <ul>
                     <li>
-                        <p>Swap volume represents the total USD value of all swaps between pairs of tokens, for all data available in Flipside Crypto's Thorchain swaps table.</p>
+                        <p>Swap volume represents the total USD value of all swaps between pairs of tokens, for all data
+                            available in Flipside Crypto's Thorchain swaps table.</p>
                     </li>
                     <li>
                         <p>Swaps between two tokens (excluding RUNE) involve trading the first token for RUNE, then from
