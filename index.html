@@ -62,7 +62,7 @@
                 success: function (jsonData) {
                     var data = new google.visualization.DataTable();
                     var from_asset = document.getElementById("from_asset").value;
-
+                    var direction = document.getElementById("direction").value;
 
                     data.addColumn('string', "FROM");
                     data.addColumn('string', "TO");
@@ -75,7 +75,16 @@
                         to = jsonData[i].TO_ASSET;
                         amount = jsonData[i].AMOUNT;
                         amount_currency = Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 12 }).format(amount)
-                        if ((from == from_asset) && (to != from_asset)) {
+                        
+                        var include = false 
+                        if ((direction == "Received") && (from != from_asset) && (to == from_asset)) {
+                            include = true
+                        }
+                        else if ((direction == "Offered") && (from == from_asset) && (to != from_asset)) {
+                            include = true
+                        }
+
+                        if (include == true) {
                             tooltip = '<div style="margin: 5px;"><p style=" width:150px;"><strong>' + from + '</strong> to <strong>' + to + '</strong></p><span style="color:#ffffff">Amount: ' + amount_currency + '</span></div>';
                             data.addRow([from, to, amount, tooltip]);
                         };
@@ -121,36 +130,49 @@
                     Thorchain swap
                     volume</span></p>
         </div>
-        <div class="block mt-2">
-            <p class=" ml-1 mb-2 is-title-5">Choose the asset being offered:</p>
-            <div class="select is-rounded is-info">
-                <select style="width:200px;" id="from_asset" onchange="drawChart()">
-                    <option>BNB.BNB</option>
-                    <option>BCH.BCH</option>
-                    <option>BTC.BTC</option>
-                    <option>ETH.ETH</option>
-                    <option>LTC.LTC</option>
-                    <option>THOR.RUNE</option>
-                    <option>BNB.AVA</option>
-                    <option>BNB.BTCB</option>
-                    <option>BNB.BUSD</option>
-                    <option>BNB.ETH</option>
-                    <option>BNB.TWT</option>
-                    <option>ETH.AAVE</option>
-                    <option>ETH.ALCX</option>
-                    <option>ETH.DODO</option>
-                    <option>ETH.HOT</option>
-                    <option>ETH.KYL</option>
-                    <option>ETH.PERP</option>
-                    <option>ETH.SNX</option>
-                    <option>ETH.SUSHI</option>
-                    <option>ETH.RAZE</option>
-                    <option>ETH.THOR</option>
-                    <option>ETH.USDC</option>
-                    <option>ETH.USDT</option>
-                    <option>ETH.XRUNE</option>
-                    <option>ETH.YFI</option>
-                </select>
+        <div class="block mt-4 mb-6">
+            <div class="columns">
+                <div class="column is-one-fifth">
+                    <p class=" ml-1 mb-2 is-title-5">Choose an asset:</p>
+                    <div class="select is-rounded is-info">
+                        <select style="width:200px;" id="from_asset" onchange="drawChart()">
+                            <option>BNB.BNB</option>
+                            <option>BCH.BCH</option>
+                            <option>BTC.BTC</option>
+                            <option>ETH.ETH</option>
+                            <option>LTC.LTC</option>
+                            <option>THOR.RUNE</option>
+                            <option>BNB.AVA</option>
+                            <option>BNB.BTCB</option>
+                            <option>BNB.BUSD</option>
+                            <option>BNB.ETH</option>
+                            <option>BNB.TWT</option>
+                            <option>ETH.AAVE</option>
+                            <option>ETH.ALCX</option>
+                            <option>ETH.DODO</option>
+                            <option>ETH.HOT</option>
+                            <option>ETH.KYL</option>
+                            <option>ETH.PERP</option>
+                            <option>ETH.SNX</option>
+                            <option>ETH.SUSHI</option>
+                            <option>ETH.RAZE</option>
+                            <option>ETH.THOR</option>
+                            <option>ETH.USDC</option>
+                            <option>ETH.USDT</option>
+                            <option>ETH.XRUNE</option>
+                            <option>ETH.YFI</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="column is-one-fifth">
+                    <p class=" ml-1 mb-2 is-title-5">Choose the swap direction</p>
+                    <div class="select is-rounded is-info">
+                        <select style="width:200px;" id="direction" onchange="drawChart()">
+                            <option>Offered</option>
+                            <option>Received</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -163,11 +185,13 @@
             <div class="content">
                 <ul>
                     <li>
-                        <p>Swap volume represents the total USD value of all swaps between pairs of tokens, for all data
+                        <p>Swap volume represents the total USD value of all swaps between pairs of tokens, for all
+                            data
                             available in Flipside Crypto's Thorchain swaps table.</p>
                     </li>
                     <li>
-                        <p>Swaps between two tokens (excluding RUNE) involve trading the first token for RUNE, then from
+                        <p>Swaps between two tokens (excluding RUNE) involve trading the first token for RUNE, then
+                            from
                             RUNE to the second token. The intermediate swap is not visualised for clarity.</p>
                     </li>
                 </ul>
