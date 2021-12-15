@@ -63,6 +63,7 @@
                     var data = new google.visualization.DataTable();
                     var from_asset = document.getElementById("from_asset").value;
                     var direction = document.getElementById("direction").value;
+                    var volume_type = document.getElementById("volume_type").value;
 
                     data.addColumn('string', "FROM");
                     data.addColumn('string', "TO");
@@ -73,10 +74,16 @@
                     for (var i = 0; i < jsonData.length; i++) {
                         from = jsonData[i].FROM_ASSET;
                         to = jsonData[i].TO_ASSET;
-                        amount = jsonData[i].AMOUNT;
-                        amount_currency = Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 12 }).format(amount)
-                        
-                        var include = false 
+                        if (volume_type == 'Total USD volume') {
+                            amount = jsonData[i].AMOUNT;
+                            amount_currency = Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 12 }).format(amount)
+                        }
+                        else if (volume_type == 'Total RUNE volume') {
+                            amount = jsonData[i].AMOUNT_RUNE;
+                            amount_currency = Intl.NumberFormat('en-US', { maximumSignificantDigits: 12 }).format(amount)
+                        }
+
+                        var include = false
                         if ((direction == "Received") && (from != from_asset) && (to == from_asset)) {
                             include = true
                         }
@@ -85,7 +92,7 @@
                         }
 
                         if (include == true) {
-                            tooltip = '<div style="margin: 5px;"><p style=" width:150px;"><strong>' + from + '</strong> to <strong>' + to + '</strong></p><span style="color:#ffffff">Amount: ' + amount_currency + '</span></div>';
+                            tooltip = '<div style="margin: 5px;"><p style=" width:150px;"><strong>' + from + '</strong> to <strong>' + to + '</strong></p><span style="color:#ffffff">' + volume_type + ': ' + amount_currency + '</span></div>';
                             data.addRow([from, to, amount, tooltip]);
                         };
 
@@ -173,6 +180,15 @@
                         </select>
                     </div>
                 </div>
+                <div class="column is-one-fifth">
+                    <p class=" ml-1 mb-2 is-title-5">Choose the volume units:</p>
+                    <div class="select is-rounded is-info">
+                        <select style="width:200px;" id="volume_type" onchange="drawChart()">
+                            <option>Total USD volume</option>
+                            <option>Total RUNE volume</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -185,7 +201,7 @@
             <div class="content">
                 <ul>
                     <li>
-                        <p>Swap volume represents the total USD value of all swaps between pairs of tokens, for all
+                        <p>Swap volume represents the total USD or RUNE value of all swaps between pairs of tokens, for all
                             data
                             available in Flipside Crypto's Thorchain swaps table.</p>
                     </li>
