@@ -61,49 +61,86 @@
                 dataType: "json",
                 success: function (jsonData) {
                     var data = new google.visualization.DataTable();
-                    var from_asset = document.getElementById("from_asset").value;
+                    var selected_asset = document.getElementById("selected_asset").value;
                     var direction = document.getElementById("direction").value;
                     var volume_type = document.getElementById("volume_type").value;
+                    var include_synths = document.getElementById("include_synths").value;
 
                     data.addColumn('string', "FROM");
                     data.addColumn('string', "TO");
                     data.addColumn('number', "WEIGHT");
                     data.addColumn({ type: 'string', role: 'tooltip' });
 
+                    var amounts = [];
+                    var included = [];
+                    var tooltips = [];
 
+                    // first determine which entries are included based on selected filters.
                     for (var i = 0; i < jsonData.length; i++) {
                         from = jsonData[i].FROM_ASSET;
                         to = jsonData[i].TO_ASSET;
-                        if (volume_type == 'Total USD volume') {
-                            amount = jsonData[i].AMOUNT;
-                            amount_currency = Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 12 }).format(amount)
-                        }
-                        else if (volume_type == 'Total RUNE volume') {
-                            amount = jsonData[i].AMOUNT_RUNE;
-                            amount_currency = Intl.NumberFormat('en-US', { maximumSignificantDigits: 12 }).format(amount)
-                        }
+                        from_type = jsonData[i].FROM_TYPE;
+                        to_type = jsonData[i].TO_TYPE;
 
-                        var include = false
-                        if ((direction == "Received") && (from != from_asset) && (to == from_asset)) {
+                        var include = false;
+                        var asset_received = (from != selected_asset) && (to == selected_asset);
+                        var asset_offered = (from == selected_asset) && (to != selected_asset);
+
+                        var inc_synths = (include_synths == 'Assets & Synths') || (include_synths == 'Synths only')
+                        var inc_assets = (include_synths == 'Assets & Synths') || (include_synths == 'Assets only')
+
+                        var offered_type_inc = ((to_type == 'synth') && inc_synths) || ((to_type == 'asset') & inc_assets);
+
+                        var received_type_inc = ((from_type == 'synth') && inc_synths) || (from_type == 'asset' & inc_assets);
+
+                        if ((direction == "Received") && asset_received && received_type_inc) {
                             include = true
                         }
-                        else if ((direction == "Offered") && (from == from_asset) && (to != from_asset)) {
+                        else if ((direction == "Offered") && asset_offered && offered_type_inc) {
                             include = true
                         }
 
-                        if (include == true) {
-                            tooltip = '<div style="margin: 5px;"><p style=" width:150px;"><strong>' + from + '</strong> to <strong>' + to + '</strong></p><span style="color:#ffffff">' + volume_type + ': ' + amount_currency + '</span></div>';
-                            data.addRow([from, to, amount, tooltip]);
+                        if (include) {
+                            amounts.push(parseFloat(jsonData[i].AMOUNT))
+                            included.push(true)
+                        }
+                        else {
+                            included.push(false)
                         };
 
-                    }
+                    };
 
-                    var colors = ['#00deff', '#00deff'];
+                    // calculate maximum value of selected entries. This is used to enforce a minimum weight on very small entries.
+                    max = Math.max(...amounts);
+
+                    for (var i = 0; i < jsonData.length; i++) {
+                        if (included[i]) {
+
+                            from = jsonData[i].FROM_ASSET;
+                            to = jsonData[i].TO_ASSET;
+                            from_type = jsonData[i].FROM_TYPE;
+                            to_type = jsonData[i].TO_TYPE;
+
+                            if (volume_type == 'Total USD volume') {
+                                amount = jsonData[i].AMOUNT;
+                                amount_currency = Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 12 }).format(amount)
+                            }
+                            else if (volume_type == 'Total RUNE volume') {
+                                amount = jsonData[i].AMOUNT_RUNE;
+                                amount_currency = Intl.NumberFormat('en-US', { maximumSignificantDigits: 12 }).format(amount)
+                            }
+
+                            tooltip = '<div style="margin: 5px;"><p style=" width:150px;"><strong>' + from + '</strong> to <strong>' + to + '</strong></p><span style="color:#ffffff">' + volume_type + ': ' + amount_currency + '</span></div>';
+                            
+                            data.addRow([from, to, Math.max(max * 0.001, amount), tooltip]);
+                        };
+                    };
 
                     // Sets chart options.
                     var options = {
                         tooltip: { isHtml: true },
                         sankey: {
+                            iterations: 2,
                             link: {
                                 colorMode: 'gradient',
                                 color: { stroke: '#00deff', strokeWidth: 0.05 }
@@ -125,6 +162,24 @@
             });
         }
 
+        window.onload = (function () {
+            var json = $.ajax({
+                url: "https://api.flipsidecrypto.com/api/v2/queries/044ea8ff-9093-49d2-b440-045ea4a83597/data/latest",
+                dataType: "json",
+                success: function (jsonData) {
+                    options = jsonData[0]['ASSETS'].split(',')
+
+                    select = document.getElementById("selected_asset");
+                    for (var i = 0; i <= options.length - 1; i++) {
+                        option = document.createElement("option");
+                        option.innerHTML = options[i];
+                        select.appendChild(option);
+                    }
+                }
+            });
+
+        });
+
     </script>
 </head>
 
@@ -140,34 +195,9 @@
         <div class="block mt-4 mb-6">
             <div class="columns">
                 <div class="column is-one-fifth">
-                    <p class=" ml-1 mb-2 is-title-5">Choose an asset:</p>
+                    <p class=" ml-1 mb-2 is-title-5">Choose an asset or synth:</p>
                     <div class="select is-rounded is-info">
-                        <select style="width:200px;" id="from_asset" onchange="drawChart()">
-                            <option>BNB.BNB</option>
-                            <option>BCH.BCH</option>
-                            <option>BTC.BTC</option>
-                            <option>ETH.ETH</option>
-                            <option>LTC.LTC</option>
-                            <option>THOR.RUNE</option>
-                            <option>BNB.AVA</option>
-                            <option>BNB.BTCB</option>
-                            <option>BNB.BUSD</option>
-                            <option>BNB.ETH</option>
-                            <option>BNB.TWT</option>
-                            <option>ETH.AAVE</option>
-                            <option>ETH.ALCX</option>
-                            <option>ETH.DODO</option>
-                            <option>ETH.HOT</option>
-                            <option>ETH.KYL</option>
-                            <option>ETH.PERP</option>
-                            <option>ETH.SNX</option>
-                            <option>ETH.SUSHI</option>
-                            <option>ETH.RAZE</option>
-                            <option>ETH.THOR</option>
-                            <option>ETH.USDC</option>
-                            <option>ETH.USDT</option>
-                            <option>ETH.XRUNE</option>
-                            <option>ETH.YFI</option>
+                        <select style="width:200px;" id="selected_asset" onchange="drawChart()">
                         </select>
                     </div>
                 </div>
@@ -181,11 +211,21 @@
                     </div>
                 </div>
                 <div class="column is-one-fifth">
+                    <p class=" ml-1 mb-2 is-title-5">Include synths?:</p>
+                    <div class="select is-rounded is-info">
+                        <select style="width:200px;" id="include_synths" onchange="drawChart()">
+                            <option>Assets & Synths</option>
+                            <option>Assets only</option>
+                            <option>Synths only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="column is-one-fifth">
                     <p class=" ml-1 mb-2 is-title-5">Choose the volume units:</p>
                     <div class="select is-rounded is-info">
                         <select style="width:200px;" id="volume_type" onchange="drawChart()">
-                            <option>Total USD volume</option>
                             <option>Total RUNE volume</option>
+                            <option>Total USD volume</option>
                         </select>
                     </div>
                 </div>
@@ -193,7 +233,7 @@
         </div>
 
         <div class="block">
-            <div id="sankey_from" style="width: 85%; height: 75%;"> </div>
+            <div id="sankey_from" style="width: 100%; height: 90%;"> </div>
         </div>
 
         <div class="block mt-4">
@@ -201,7 +241,8 @@
             <div class="content">
                 <ul>
                     <li>
-                        <p>Swap volume represents the total USD or RUNE value of all swaps between pairs of tokens, for all
+                        <p>Swap volume represents the total USD or RUNE value of all swaps between pairs of tokens, for
+                            all
                             data
                             available in Flipside Crypto's Thorchain swaps table.</p>
                     </li>
