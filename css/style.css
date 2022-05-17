@@ -1,0 +1,37 @@
+html {
+    background-color: #22242a;
+}
+
+.google-visualization-tooltip {
+    background-color: #22242a !important;
+    border: 0px solid #22242a !important;
+    -webkit-box-shadow: 0px 0px 0px 0px !important;
+}
+
+ul,
+li,
+p,
+strong {
+    color: white !important;
+}
+
+select {
+    color: white !important;
+    background-color: #22242a !important;
+}
+
+
+.social-text {
+    color: #28dcf7 !important;
+    font-weight: 700;
+}
+
+a.social-link:link,
+:visited {
+    color: #28dcf7;
+}
+
+a.social-link:hover {
+    color: #28dcf7;
+    text-decoration: underline;
+}
