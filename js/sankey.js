@@ -2,28 +2,24 @@ google.charts.load('current', { 'packages': ['sankey'] });
 google.charts.setOnLoadCallback(drawChart);
 
 
-function trunc_values(swaps, amounts, volume_type) {
+function trunc_values(swaps, vol_field) {
+
+    var amounts = [];
+    for (var i = 0; i < swaps.length; i++) {
+        amounts.push(swaps[i][vol_field])
+    }
 
     // calculate maximum value of selected entries. This is used to enforce a minimum weight on very small entries.
     max = Math.max(...amounts);
 
     for (var i = 0; i < swaps.length; i++) {
-
-        if (volume_type == 'Total USD volume') {
-            swaps[i]['AMOUNT'] = Math.max(max * 0.001, swaps[i].AMOUNT);
-        }
-        else if (volume_type == 'Total RUNE volume') {
-            swaps[i]['AMOUNT_RUNE'] = Math.max(max * 0.001, swaps[i].AMOUNT_RUNE);
-        }
-
+        swaps[i][vol_field] = Math.max(max * 0.01, swaps[i][vol_field]);
     };
 
     return swaps
 }
 
-
-function filter_by_asset(swaps, selected_asset, direction, include_synths, volume_type) {
-    var amounts = [];
+function filter_by_asset(swaps, selected_asset, direction, include_synths) {
     var swaps_flt = [];
 
     for (var i = 0; i < swaps.length; i++) {
@@ -53,13 +49,11 @@ function filter_by_asset(swaps, selected_asset, direction, include_synths, volum
         }
 
         if (include) {
-            amounts.push(parseFloat(swaps[i].AMOUNT))
             swaps_flt.push(swaps[i])
         }
 
     };
 
-    swaps = trunc_values(swaps_flt, amounts, volume_type)
     return swaps_flt
 }
 
@@ -93,7 +87,6 @@ function agg_by_asset(swaps, agg_field, val_field) {
         return res;
     }, {});
 
-    console.log(result)
     return result
 }
 
@@ -133,17 +126,17 @@ function drawChart() {
                 var agg_field = 'TO_ASSET';
             }
 
-            var tooltips = [];
-
-            // filter by date
+            // filter by date.
             swaps = filter_by_date(jsonData, mindate, maxdate)
 
-            // filter by asset type and direction
+            // filter by asset type and direction.
             swaps = filter_by_asset(swaps, selected_asset, direction, include_synths, volume_type)
 
-            // aggregate over days
-
+            // aggregate over days.
             swaps = agg_by_asset(swaps, agg_field, vol_field)
+
+            // truncate to enforce minimum size of edges.
+            swaps = trunc_values(swaps, vol_field)
 
             for (var i = 0; i < swaps.length; i++) {
                 if (direction == "Received") {
