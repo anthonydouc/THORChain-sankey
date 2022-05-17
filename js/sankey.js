@@ -93,7 +93,7 @@ function agg_by_asset(swaps, agg_field, val_field) {
 function drawChart() {
 
     var json = $.ajax({
-        url: "https://api.flipsidecrypto.com/api/v2/queries/816e3cff-997c-4151-8300-e5e0f97a39de/data/latest",
+        url: "https://api.flipsidecrypto.com/api/v2/queries/18af3d33-c935-4148-9f4f-f30c28d3dcfb/data/latest",
         dataType: "json",
         success: function (jsonData) {
 
