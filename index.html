@@ -1,14 +1,19 @@
 <html>
 
 <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Thorswap Sankey</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
     <script src="https://kit.fontawesome.com/3793da8bd7.js" crossorigin="anonymous"></script>
 
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
+    <script type="text/javascript" src="js/get_options.js"> </script>
     <link rel="stylesheet" href="css/style.css">
+
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
     <script type="text/javascript" src="js/sankey.js"> </script>
 
 </head>
@@ -22,46 +27,58 @@
                     Thorchain swap
                     volume</span></p>
         </div>
-        <div class="block mt-4 mb-6">
-            <div class="columns">
-                <div class="column is-one-fifth">
-                    <p class=" ml-1 mb-2 is-title-5">Choose an asset or synth:</p>
-                    <div class="select is-rounded is-info">
-                        <select style="width:200px;" id="selected_asset" onchange="drawChart()">
-                        </select>
+        <div class="inputs mlr-6 mt-4 mb-6 p-4">
+            <div class="block mt-1 mb-1">
+                <div class="columns">
+                    <div class="column is-one-fifth">
+                        <p class=" ml-1 mb-2 is-title-5">Choose an asset or synth:</p>
+                        <div class="select is-rounded is-info">
+                            <select style="width:200px;" id="selected_asset" onchange="drawChart()">
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="column is-one-fifth">
-                    <p class=" ml-1 mb-2 is-title-5">Choose the swap direction:</p>
-                    <div class="select is-rounded is-info">
-                        <select style="width:200px;" id="direction" onchange="drawChart()">
-                            <option>Offered</option>
-                            <option>Received</option>
-                        </select>
+                    <div class="column is-two-fifths">
+                        <p class=" ml-1 mb-2 is-title-5">Choose a date range:</p>
+                        <input id="daterange" data-color="info" type="date" data-is-range="true"
+                            data-close-on-select="false" show-clear-button="false">
                     </div>
+
                 </div>
-                <div class="column is-one-fifth">
-                    <p class=" ml-1 mb-2 is-title-5">Include synths?:</p>
-                    <div class="select is-rounded is-info">
-                        <select style="width:200px;" id="include_synths" onchange="drawChart()">
-                            <option>Assets & Synths</option>
-                            <option>Assets only</option>
-                            <option>Synths only</option>
-                        </select>
+            </div>
+            <div class="block mt-2 mb-1">
+                <div class="columns">
+
+                    <div class="column is-one-fifth">
+                        <p class=" ml-1 mb-2 is-title-5">Choose the swap direction:</p>
+                        <div class="select is-rounded is-info">
+                            <select style="width:200px;" id="direction" onchange="drawChart()">
+                                <option>Offered</option>
+                                <option>Received</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-                <div class="column is-one-fifth">
-                    <p class=" ml-1 mb-2 is-title-5">Choose the volume units:</p>
-                    <div class="select is-rounded is-info">
-                        <select style="width:200px;" id="volume_type" onchange="drawChart()">
-                            <option>Total USD volume</option>
-                            <option>Total RUNE volume</option>
-                        </select>
+                    <div class="column is-one-fifth">
+                        <p class=" ml-1 mb-2 is-title-5">Include synths?:</p>
+                        <div class="select is-rounded is-info">
+                            <select style="width:200px;" id="include_synths" onchange="drawChart()">
+                                <option>Assets & Synths</option>
+                                <option>Assets only</option>
+                                <option>Synths only</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="column is-one-fifth">
+                        <p class=" ml-1 mb-2 is-title-5">Choose the volume units:</p>
+                        <div class="select is-rounded is-info">
+                            <select style="width:200px;" id="volume_type" onchange="drawChart()">
+                                <option>Total USD volume</option>
+                                <option>Total RUNE volume</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-
         <div class="block">
             <div id="sankey_from" style="width: 95%; height: 98%;"> </div>
         </div>
@@ -72,14 +89,11 @@
                 <ul>
                     <li>
                         <p>Swap volume represents the total USD or RUNE value of all swaps between pairs of tokens, for
-                            all
-                            data
-                            available in Flipside Crypto's Thorchain swaps table.</p>
+                            all data available in Flipside Crypto's Thorchain swaps table.</p>
                     </li>
                     <li>
                         <p>Swaps between two tokens (excluding RUNE) involve trading the first token for RUNE, then
-                            from
-                            RUNE to the second token. The intermediate swap is not visualised for clarity.</p>
+                            from RUNE to the second token. The intermediate swap is not visualised for clarity.</p>
                     </li>
                 </ul>
                 <p>A JSON enpoint for the underlying data is available: <a class="social-link"
@@ -105,6 +119,38 @@
         </div>
     </div>
 
+
+    <link rel="stylesheet" href="bulma-calendar.min.css">
+    <script type="text/javascript" src="bulma-calendar.min.js"> </script>
+
+    <script type="text/javascript">
+        var json = $.ajax({
+            url: "https://api.flipsidecrypto.com/api/v2/queries/76deeb22-f21e-4643-81c9-faff2e3ccd9f/data/latest",
+            dataType: "json",
+            success: function (jsonData) {
+
+                mindate = new Date(jsonData[0]['MINDATE'])
+                maxdate = new Date(jsonData[0]['MAXDATE'])
+
+                options = {
+                    'startDate': mindate,
+                    'endDate': maxdate,
+                    'minDate': mindate,
+                    'maxDate': maxdate
+                };
+                const calendars = bulmaCalendar.attach('[type="date"]', options);
+
+                for (var i = 0; i < calendars.length; i++) {
+                    // Add listener to select event
+                    calendars[i].on('select', date => {
+                       drawChart()
+                    });
+                }
+            }
+        })
+
+
+    </script>
 </body>
 
 </html>

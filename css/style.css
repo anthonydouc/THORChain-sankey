@@ -2,6 +2,17 @@ html {
     background-color: #22242a;
 }
 
+.inputs {
+    border: solid 1.5px #3e8ed0;
+    border-radius: 4px;
+    box-shadow: 0px 0px 3px 2px #3e8ed0;
+}
+
+.datetimepicker-dummy-wrapper, .datetimepicker, .datetimepicker-dummy, .datetimepicker-dummy-input  {
+    background-color: #22242a !important;
+    color:white !important;
+}
+
 .google-visualization-tooltip {
     background-color: #22242a !important;
     border: 0px solid #22242a !important;
