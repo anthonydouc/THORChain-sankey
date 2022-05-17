@@ -181,9 +181,15 @@ function drawChart() {
                 },
             };
 
-            // Instantiate and draw chart, passing in some options.
-            var chart = new google.visualization.Sankey(document.getElementById('sankey_from'));
-            chart.draw(data, options);
+
+            if (swaps.length == 0) {
+                document.getElementById('sankey_from').innerHTML = '<p class="has-text-weight-semibold"> No swaps occured in the selected date range.</p>'
+            }
+            else {
+                // Instantiate and draw chart, passing in some options.
+                var chart = new google.visualization.Sankey(document.getElementById('sankey_from'));
+                chart.draw(data, options);
+            }
         }
     });
 }
