@@ -38,8 +38,7 @@
                     </div>
                     <div class="column is-two-fifths">
                         <p class=" ml-1 mb-2 is-title-5">Choose a date range:</p>
-                        <input id="daterange" data-color="info" type="date" data-is-range="true"
-                            data-close-on-select="false" show-clear-button="false">
+                        <input id="daterange" data-color="info" type="date" data-is-range="true">
                     </div>
 
                 </div>
@@ -136,7 +135,8 @@
                     'startDate': mindate,
                     'endDate': maxdate,
                     'minDate': mindate,
-                    'maxDate': maxdate
+                    'maxDate': maxdate,
+                    'showTodayButton': false
                 };
                 const calendars = bulmaCalendar.attach('[type="date"]', options);
 
