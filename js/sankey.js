@@ -126,7 +126,8 @@ function drawChart() {
 
     var urls = ["https://api.flipsidecrypto.com/api/v2/queries/18af3d33-c935-4148-9f4f-f30c28d3dcfb/data/latest", 
                 "https://api.flipsidecrypto.com/api/v2/queries/7acfbdd9-d59b-48d5-8626-21d1e591fbf5/data/latest",
-                "https://api.flipsidecrypto.com/api/v2/queries/fc40d631-c491-42ba-b470-3b142f6ce60e/data/latest"];
+                "https://api.flipsidecrypto.com/api/v2/queries/fc40d631-c491-42ba-b470-3b142f6ce60e/data/latest",
+                "https://api.flipsidecrypto.com/api/v2/queries/9402ce1a-d2df-4040-a54d-6a2ead76f320/data/latest"];
                 
  
 
