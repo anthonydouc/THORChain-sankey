@@ -90,41 +90,15 @@ function agg_by_asset(swaps, agg_field, val_field) {
     return result
 }
 
-function drawChart() {
-
+function getData(url, all_swaps){
     var json = $.ajax({
-        url: "https://api.flipsidecrypto.com/api/v2/queries/18af3d33-c935-4148-9f4f-f30c28d3dcfb/data/latest",
+        url: url,
         dataType: "json",
         success: function (jsonData) {
-
-            var data = new google.visualization.DataTable();
-            var selected_asset = document.getElementById("selected_asset").value;
-            var direction = document.getElementById("direction").value;
-            var volume_type = document.getElementById("volume_type").value;
-            var include_synths = document.getElementById("include_synths").value;
 
             const calendar = document.querySelector('#daterange');
             var mindate = new Date(calendar.bulmaCalendar.date['start']);
             var maxdate = new Date(calendar.bulmaCalendar.date['end']);
-
-            data.addColumn('string', "FROM");
-            data.addColumn('string', "TO");
-            data.addColumn('number', "WEIGHT");
-            data.addColumn({ type: 'string', role: 'tooltip' });
-
-            if (volume_type == 'Total USD volume') {
-                var vol_field = 'AMOUNT';
-            }
-            else {
-                var vol_field = 'AMOUNT_RUNE';
-            }
-
-            if (direction == "Received") {
-                var agg_field = 'FROM_ASSET';
-            }
-            else {
-                var agg_field = 'TO_ASSET';
-            }
 
             // filter by date.
             swaps = filter_by_date(jsonData, mindate, maxdate)
@@ -132,65 +106,142 @@ function drawChart() {
             // filter by asset type and direction.
             swaps = filter_by_asset(swaps, selected_asset, direction, include_synths, volume_type)
 
-            // aggregate over days.
-            swaps = agg_by_asset(swaps, agg_field, vol_field)
+            all_swaps = all_swaps.concat(swaps)
+        }
 
-            // truncate to enforce minimum size of edges.
-            swaps = trunc_values(swaps, vol_field)
+    });
+    return json
+}
 
-            for (var i = 0; i < swaps.length; i++) {
-                if (direction == "Received") {
-                    to = selected_asset
-                    from = swaps[i].FROM_ASSET;
-                }
-                else {
-                    to = swaps[i].TO_ASSET;
-                    from = selected_asset
-                }
+function drawChart() {
 
-                amount = swaps[i][vol_field]
+    var data = new google.visualization.DataTable();
 
-                if (volume_type == 'Total USD volume') {
-                    amount_currency = Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 12 }).format(amount)
-                }
-                else if (volume_type == 'Total RUNE volume') {
-                    amount_currency = Intl.NumberFormat('en-US', { maximumSignificantDigits: 12 }).format(amount)
-                }
+    var all_swaps = [];
 
-                tooltip = '<div style="margin: 5px;"><p style=" width:150px;"><strong>' + from + '</strong> to <strong>' + to + '</strong></p><span style="color:#ffffff">' + volume_type + ': ' + amount_currency + '</span></div>';
+    data.addColumn('string', "FROM");
+    data.addColumn('string', "TO");
+    data.addColumn('number', "WEIGHT");
+    data.addColumn({ type: 'string', role: 'tooltip' });
 
-                data.addRow([from, to, amount, tooltip]);
-            };
+    var urls = ["https://api.flipsidecrypto.com/api/v2/queries/18af3d33-c935-4148-9f4f-f30c28d3dcfb/data/latest", 
+                "https://api.flipsidecrypto.com/api/v2/queries/7acfbdd9-d59b-48d5-8626-21d1e591fbf5/data/latest",
+                "https://api.flipsidecrypto.com/api/v2/queries/fc40d631-c491-42ba-b470-3b142f6ce60e/data/latest"];
+                
+ 
 
-            // Set chart options.
-            var options = {
-                tooltip: { isHtml: true },
-                sankey: {
-                    iterations: 2,
-                    link: {
-                        colorMode: 'gradient',
-                        color: { stroke: '#00deff', strokeWidth: 0.05 }
-                    },
-                    node: {
-                        width: 20,
-                        nodePadding: 12,
-                        label: {
-                            color: '#FFFFFF'
-                        }
-                    }
-                },
-            };
+    var requests = [];
+
+    for(var i = 0; i < urls.length; i++){
+        requests[i] = $.ajax({
+            url: urls[i],
+            dataType: "json",
+            success: function (jsonData) {
+
+                var selected_asset = document.getElementById("selected_asset").value;
+                var direction = document.getElementById("direction").value;
+                var volume_type = document.getElementById("volume_type").value;
+                var include_synths = document.getElementById("include_synths").value;
+            
+                const calendar = document.querySelector('#daterange');
+                var mindate = new Date(calendar.bulmaCalendar.date['start']);
+                var maxdate = new Date(calendar.bulmaCalendar.date['end']);
+
+                // filter by date.
+                swaps = filter_by_date(jsonData, mindate, maxdate)
+    
+                // filter by asset type and direction.
+                swaps = filter_by_asset(swaps, selected_asset, direction, include_synths, volume_type)
+    
+                all_swaps = all_swaps.concat(swaps)
+            }
+    
+        });
+    }
 
 
-            if (swaps.length == 0) {
-                document.getElementById('sankey_from').innerHTML = '<p class="has-text-weight-semibold"> No swaps occured in the selected date range.</p>'
+    $.when(...requests).then(function(){
+
+
+        var selected_asset = document.getElementById("selected_asset").value;
+        var direction = document.getElementById("direction").value;
+        var volume_type = document.getElementById("volume_type").value;
+    
+        if (volume_type == 'Total USD volume') {
+            var vol_field = 'AMOUNT';
+        }
+        else {
+            var vol_field = 'AMOUNT_RUNE';
+        }
+    
+        if (direction == "Received") {
+            var agg_field = 'FROM_ASSET';
+        }
+        else {
+            var agg_field = 'TO_ASSET';
+        }
+
+        // aggregate over days.ss
+        all_swaps = agg_by_asset(all_swaps, agg_field, vol_field)
+
+        // truncate to enforce minimum size of edges.
+        all_swaps = trunc_values(all_swaps, vol_field)
+
+        for (var i = 0; i < all_swaps.length; i++) {
+
+            if (direction == "Received") {
+                to = selected_asset
+                from = all_swaps[i].FROM_ASSET;
             }
             else {
-                // Instantiate and draw chart, passing in some options.
-                var chart = new google.visualization.Sankey(document.getElementById('sankey_from'));
-                chart.draw(data, options);
+                to = all_swaps[i].TO_ASSET;
+                from = selected_asset
             }
+
+            amount = all_swaps[i][vol_field]
+
+            if (volume_type == 'Total USD volume') {
+                amount_currency = Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumSignificantDigits: 12 }).format(amount)
+            }
+            else if (volume_type == 'Total RUNE volume') {
+                amount_currency = Intl.NumberFormat('en-US', { maximumSignificantDigits: 12 }).format(amount)
+            }
+
+            tooltip = '<div style="margin: 5px;"><p style=" width:150px;"><strong>' + from + '</strong> to <strong>' + to + '</strong></p><span style="color:#ffffff">' + volume_type + ': ' + amount_currency + '</span></div>';
+
+            data.addRow([from, to, amount, tooltip]);
+        };
+
+
+        // Set chart options.
+        var options = {
+            tooltip: { isHtml: true },
+            sankey: {
+                iterations: 2,
+                link: {
+                    colorMode: 'gradient',
+                    color: { stroke: '#00deff', strokeWidth: 0.05 }
+                },
+                node: {
+                    width: 20,
+                    nodePadding: 12,
+                    label: {
+                        color: '#FFFFFF'
+                    }
+                }
+            },
+        };
+
+        if (all_swaps.length == 0) {
+            document.getElementById('sankey_from').innerHTML = '<p class="has-text-weight-semibold"> No swaps occured in the selected date range.</p>'
         }
+        else {
+            // Instantiate and draw chart, passing in some options.
+            var chart = new google.visualization.Sankey(document.getElementById('sankey_from'));
+            chart.draw(data, options);
+        }
+
     });
+
 }
 

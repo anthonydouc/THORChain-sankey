@@ -128,11 +128,12 @@
             dataType: "json",
             success: function (jsonData) {
 
-                mindate = new Date(jsonData[0]['MINDATE'])
-                maxdate = new Date(jsonData[0]['MAXDATE'])
+                mindate = new Date(jsonData[0]['MINDATE']);
+                maxdate = new Date(jsonData[0]['MAXDATE']);
+                startdate = new Date(jsonData[0]['STARTDATE']);
 
                 options = {
-                    'startDate': mindate,
+                    'startDate': startdate,
                     'endDate': maxdate,
                     'minDate': mindate,
                     'maxDate': maxdate,
